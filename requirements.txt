@@ -1,0 +1,4 @@
+sosopt==0.0.7
+ipywidgets
+quadprog
+matplotlib
