@@ -11,7 +11,6 @@ simulation.ts = 1e-6;
 simulation.tsim = 2;
 simulation.tsim = 3;
 
-% cpu.ts = 100e-6;
 cpu.ts = 200e-6;
 
 % nominal converter power
@@ -45,14 +44,14 @@ machine.breaker_close = 0.04;
 
 % 0: infinite bus
 % 1: SM
-% 2: GFL converter (no DC-link), 
+% 2: GFL converter
 % 3: passive load
-% 4: GFL converter
+% 4: GFL converter (no DC-link), 
 machine.grid = 0;
 machine.grid = 1;
 % machine.grid = 2;
 % machine.grid = 3;
-machine.grid = 4;
+% machine.grid = 4;
 
 
 % MMC parameters
@@ -85,37 +84,25 @@ ctrl.grid.ictrl.ti = 2e-3;
 ctrl.grid.ictrl.enable = 0.02;
 ctrl.machine.ictrl.ref_enable = 0.1;
 
-% 0 - EDPC (modified)
-% 1 - EDPC
-% 2 - VSM
-% 3 - dVOC
+% 0 - EDPC
+% 1 - VSM
+% 2 - EDPC (modified)
 ctrl.machine.gfm_sel = 0;
-ctrl.machine.gfm_sel = 1;
+% ctrl.machine.gfm_sel = 1;
 % ctrl.machine.gfm_sel = 2;
-% ctrl.machine.gfm_sel = 3;
-% ctrl.machine.gfm_sel = 4;
-% ctrl.machine.gfm_sel = 5;
 
 % 0 - open loop
-% 1 - vector current control
-% 2 - safety filter
-% 3 - adaptive VI
+% 1 - safety filter
+% 2 - safety filter (CBF only)
+% 3 - vector current control
 % 4 - Current Limiting Control
-% 5 - safety filter (CBF only)
-% 6 - safety filter (no vPCC filter)
-% 7 - safety filter (i0) (2 states)
-% 8 - safety filter (i0)
-% 9 - safety filter (i0) (2 states, B only)
-ctrl.machine.ictrl.sel = 0;
-% ctrl.machine.ictrl.sel = 1;
+% 5 - adaptive VI
+% ctrl.machine.ictrl.sel = 0;
+ctrl.machine.ictrl.sel = 1;
 % ctrl.machine.ictrl.sel = 2;
-ctrl.machine.ictrl.sel = 3;
+% ctrl.machine.ictrl.sel = 3;
 % ctrl.machine.ictrl.sel = 4;
 % ctrl.machine.ictrl.sel = 5;
-% ctrl.machine.ictrl.sel = 6;
-ctrl.machine.ictrl.sel = 7;
-% ctrl.machine.ictrl.sel = 8;
-% ctrl.machine.ictrl.sel = 9;
 
 ctrl.vdcctrl.kp = 0.342*20;
 ctrl.vdcctrl.ti = 0.1;
@@ -136,7 +123,11 @@ soa.m_max = 1.23;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % enable current control if i > i_lim
+
+% switched current controller
 currentControl.i_lim = 1.24;
+
+% % permanent activated current controller
 % currentControl.i_lim = 0;
 
 
@@ -175,14 +166,10 @@ if machine.grid == 0
 
 % synchronous machine
 elseif machine.grid == 1
-    % testScenario.p = -0.9;
     testScenario.p = 0.9;
-    % testScenario.p = 0.5;
-    % testScenario.p = 0;
 
 elseif machine.grid == 4
     testScenario.p = -0.9;
-    % testScenario.p = -0.5;
 end
 
 
@@ -221,17 +208,10 @@ ratio = 0.1;
 % ratio = 2;
 % ratio = 5;
 % ratio = 10;
-% if machine.grid == 4
-%     ratio = 5;
-%     % ratio = 10;
-% end
 loadStep.r = machine.tr.r * ratio;
 loadStep.l = machine.tr.l * ratio;
-% loadStep.stepDown = 1 - 2.5*simulation.ts;
 loadStep.stepDown = 1.4 - 2.5*simulation.ts;
-% loadStep.stepDown = 4 - 2.5*simulation.ts;
 loadStep.stepUp = loadStep.stepDown + 0.3;
-% loadStep.stepUp = loadStep.stepDown + 0.1;
 
 
 dVOC.kappa = atan(machine.tr.l/machine.tr.r);
@@ -252,7 +232,6 @@ grid.tr.r_si = grid.tr.r * grid.zn;
 
 machine.f_ratio_50 = machine.fn / 50;
 machine.wn = 2*pi*machine.fn;
-% machine.w0 = machine.wn * machine.w0_pu;
 machine.vn = machine.v / sqrt(3);
 machine.sn = converter.s / 3;
 machine.in = machine.sn / machine.vn;
@@ -267,7 +246,6 @@ machine.filter.c_si = machine.filter.c * machine.cn;
 machine.filter.r_si = machine.filter.r * machine.zn;
 machine.filter.l_si = machine.filter.l * machine.ln;
 
-% mmc.cell.c_n = converter.s / 3 / mmc.cell.v_dc^2;
 mmc.cell.c_n = converter.s / 9 / mmc.cell.v_dc^2;
 mmc.cell.c_dc_pu = mmc.cell.c_dc / mmc.cell.c_n;
 mmc.cell.total_v_dc = mmc.cell.v_dc * mmc.cell.n;
@@ -309,7 +287,6 @@ else
 end
 
 stiffGrid.w = stiffGrid.w_pu * machine.wn;
-% stiffGrid.v = 1 - testScenario.q * machine.tr.l;
 stiffGrid.vpeak = machine.vpeak * stiffGrid.v;
 
 
